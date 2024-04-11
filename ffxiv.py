@@ -7,6 +7,7 @@ import pyxivapi
 #from dotenv import load_dotenv
 from Item import Item
 from RecipeClass import RecipeClass
+from Ingredient import Ingredient
 
 from pyxivapi.models import Filter, Sort
 client = pyxivapi.XIVAPIClient(api_key="0564745d57eb42419b7c85aef1e6c8645a577a137a2b4b4d80fe3d838c87818a")
@@ -23,7 +24,7 @@ async def getItemByName(index,name):
         per_page=10
     )
     await client.session.close()   
-    print(item)
+    #print(item)
     return item['Results'][0]
 
 async def getItemById(index,id):
@@ -35,29 +36,49 @@ async def getItemById(index,id):
         language="en"
     )    
     await client.session.close()
-    print(item)
+    #print(item)
     return item
 
-
-
-
-if __name__ == '__main__':   
-    #load_dotenv()  # This line brings all environment variables from .env into os.environ
-    #print("Chave xivapi_key", os.environ['xivapi_key']) 
-    #logging.basicConfig(level=logging.INFO, format='%(message)s', datefmt='%H:%M')
+def recursiveSearch(ingredient:Ingredient):
     loop = asyncio.get_event_loop()
-    item = Item(loop.run_until_complete(getItemByName("Recipe","Indagator's Helmet of Gathering")))
-    print(f"Encontrado {item.UrlType} {item.ID} - {item.Name}")
-    recipeClass = loop.run_until_complete(getItemById("Item",item.ID))    
-    recipeClass = RecipeClass(recipeClass["Recipes"][0])
-    #rever esse classjob pq preciso desse id
-    #classJob =loop.run_until_complete(getItemById("ClassJob",recipeClass.ID))
-    print(f"O item {item.Name} é uma {item.UrlType} com ID: {recipeClass.ID} ")
+    itemToCraft = Item(loop.run_until_complete(getItemByName("Recipe",ingredient.Name)))
+    if(itemToCraft):
+        print(f"Encontrado item: {itemToCraft.Name} com id: {itemToCraft.ID}")
+        receitaIngrediantes = loop.run_until_complete(getItemById("Recipe",itemToCraft.ID))        
 
-    #teste = loop.run_until_complete(getItemById("Recipe",item.ID))
-    # for x in range(10):
-    #     nome = teste[f"item_ingredient{x}"]
-    #     if(nome): print(nome)
+
+
+
+    
+
+
+
+if __name__ == '__main__':       
+    loop = asyncio.get_event_loop()
+    itemToCraft = Item(loop.run_until_complete(getItemByName("Item","Indagator's Helmet of Gathering")))
+    print(f"Encontrado {itemToCraft.UrlType} {itemToCraft.ID} - {itemToCraft.Name}")
+    recipeClass = loop.run_until_complete(getItemById("Item",itemToCraft.ID))    
+    recipeClass = RecipeClass(recipeClass["Recipes"][0])
+    print(f"Encontrada receita {recipeClass.ID}")    
+    receitaIngrediantes = loop.run_until_complete(getItemById("Recipe",recipeClass.ID))
+    ingredientList = []
+    for x in range(10):
+        ingredient = receitaIngrediantes[f"ItemIngredient{x}"]
+        amountIngredient = receitaIngrediantes[f"AmountIngredient{x}"]
+        if(ingredient and amountIngredient):                  
+            ingredientList.append(Ingredient(ingredient['ID'],ingredient['Name'] ,amountIngredient))
+
+    for i in ingredientList:
+        print(f"Ingredient:{i.id}-{i.Name} with Quantity: {i.Amount}")
+        teste = recursiveSearch(i)
+        print(teste)
+            
+
+    
+    
+
+
+
     
 
 

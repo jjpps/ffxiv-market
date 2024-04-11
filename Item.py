@@ -4,4 +4,4 @@ class Item:
         self.Icon =data['Icon']
         self.Name =data['Name']
         self.UrlType =data['UrlType']
-        self.ClassJob =data['ClassJob']
+        #self.ClassJob =data['ClassJob']
