@@ -25,7 +25,11 @@ async def getItemByName(index,name):
     )
     await client.session.close()   
     #print(item)
-    return item['Results'][0]
+    if(item['Results']):
+        return item['Results'][0]
+    else:
+        return None    
+    
 
 async def getItemById(index,id):
     
@@ -39,28 +43,28 @@ async def getItemById(index,id):
     #print(item)
     return item
 
+
 def recursiveSearch(ingredient:Ingredient):
     loop = asyncio.get_event_loop()
     itemToCraft = Item(loop.run_until_complete(getItemByName("Recipe",ingredient.Name)))
     if(itemToCraft):
         print(f"Encontrado item: {itemToCraft.Name} com id: {itemToCraft.ID}")
-        receitaIngrediantes = loop.run_until_complete(getItemById("Recipe",itemToCraft.ID))        
+        print(itemToCraft.UrlType)
+        
 
 
 
-
-    
-
-
-
-if __name__ == '__main__':       
+def main():
     loop = asyncio.get_event_loop()
     itemToCraft = Item(loop.run_until_complete(getItemByName("Item","Indagator's Helmet of Gathering")))
     print(f"Encontrado {itemToCraft.UrlType} {itemToCraft.ID} - {itemToCraft.Name}")
+
     recipeClass = loop.run_until_complete(getItemById("Item",itemToCraft.ID))    
     recipeClass = RecipeClass(recipeClass["Recipes"][0])
     print(f"Encontrada receita {recipeClass.ID}")    
+
     receitaIngrediantes = loop.run_until_complete(getItemById("Recipe",recipeClass.ID))
+    
     ingredientList = []
     for x in range(10):
         ingredient = receitaIngrediantes[f"ItemIngredient{x}"]
@@ -72,6 +76,15 @@ if __name__ == '__main__':
         print(f"Ingredient:{i.id}-{i.Name} with Quantity: {i.Amount}")
         teste = recursiveSearch(i)
         print(teste)
+
+
+    
+
+
+
+if __name__ == '__main__':
+    main()       
+    
             
 
     
