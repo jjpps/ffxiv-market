@@ -49,30 +49,31 @@ async def getItemById(index,id):
         return None
       
 
-def recursiveSearch(ingredient:Ingredient):
+def recursiveSearch(itemPai):
     loop = asyncio.get_event_loop()
-    itemToCraft = loop.run_until_complete(getItemByName("Recipe",ingredient.Name))
+    itemToCraft = loop.run_until_complete(getItemByName("Recipe",itemPai.Name))
     if(itemToCraft):
         #print(f"Encontrado item: {itemToCraft["Name"]} com id: {itemToCraft["ID"]} ele é {itemToCraft["UrlType"]}")
-        if(itemToCraft["UrlType"] == "Recipe"):
-            #print(f"{itemToCraft["Name"]} é uma Receita" )
+        if(itemToCraft["UrlType"] == "Recipe"):            
             receitaIngrediantes = loop.run_until_complete(getItemById("Recipe",itemToCraft["ID"]))
-            ingredientList = []
+
+            itemPai.Receita = []
             for x in range(10):
-                ingredient = receitaIngrediantes[f"ItemIngredient{x}"]
-                amountIngredient = receitaIngrediantes[f"AmountIngredient{x}"]
+                ingredientFilho = receitaIngrediantes[f"ItemIngredient{x}"]
+                amountIngredientFilho = receitaIngrediantes[f"AmountIngredient{x}"]                
                 Icon = receitaIngrediantes[f"Icon"]
-                if(ingredient and amountIngredient):
-                    #print(f"Ingredient {ingredient['ID']} name {ingredient['Name']}")
-                    ingredientList.append(Ingredient(ingredient['ID'],ingredient['Name'] ,amountIngredient,Icon))
-            return ingredientList
+
+                if(ingredientFilho and amountIngredientFilho):
+                    #print(f"o Item {itemPai.Name} é {itemPai.Type} de {ingredientFilho["Name"]}")                    
+                    itemPai.Receita.append(Ingredient(ingredientFilho["ID"],ingredientFilho["Name"],amountIngredientFilho,ingredientFilho["Icon"],"ItemFilho"))
+
+            return itemPai
 
         
 
 
 
-def main(item):
-    ItemFinal = []
+def main(item):    
     loop = asyncio.get_event_loop()
     itemToCraft = loop.run_until_complete(getItemByName("Item",item))
     #print(f"Encontrado {itemToCraft["UrlType"]} {itemToCraft["ID"]} - {itemToCraft["Name"]}")
@@ -94,16 +95,24 @@ def main(item):
             ingredientList.append(Ingredient(ingredient['ID'],ingredient['Name'] ,amountIngredient))
 
     for i in ingredientList:        
-        ItemFinal.append(recursiveSearch(i))
+        #ItemFinal.append(recursiveSearch(i))        
+        i.Type = "ItemPai"
+        i.Receita = None
+        recursiveSearch(i)
     
-    # for item in ItemFinal:
-    #     if(item): 
-    #         for i in item:
-    #             print(f"Name do Item {i.Name} qtd: {i.Amount} Icon:{i.Icon}")
-    
-    return ItemFinal
+    for itemPai in ingredientList:
+        #print(f"Nome {itemPai.Name} tipo {itemPai.Type}")
+        if(itemPai.Receita is not None):
+            print(f"o Item {itemPai.Name} possuiu receita com qtd {itemPai.Amount}")
+            for receita in itemPai.Receita:
+                print(f"--{receita.Name} precisa de {receita.Amount}")
+        else:
+            print(f"Item {itemPai.Name} não tem receita")
+
         
         
+        
+
 
 
     
@@ -112,29 +121,7 @@ def main(item):
 
 if __name__ == '__main__':
     #Indagator's Doublet Vest of Gathering
-    itemList =[]    
-    itemToCsv=[]
-    haveMore = True
-    while (haveMore):
-        var = str(input("Item to Search: "))
-        itemList.append(var)
-        haveMore = True if input("Continue [Y/N] ?")=="Y" else False
-    for i in itemList:
-        itemToCsv.append(main(i))
-
-    with open('Crafting.csv', 'w', newline='',) as file:
-        writer = csv.writer(file)
-        field = ["Name", "Amount", "Icon"]
-        
-        writer.writerow(field)
-        for item in itemToCsv:
-            if(item): 
-                for i in item:
-                    if(i is not None):
-                        for i2 in i:
-                            writer.writerow([i2.Name, i2.Amount, i2.Icon])        
-    
-
+    main("Indagator's Doublet Vest of Gathering")
 
 
 
