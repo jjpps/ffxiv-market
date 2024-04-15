@@ -4,3 +4,5 @@ Aplicação em console para geração de um excel com as receitas e quantidades 
 
 pip install pyxivapi
 pip install dotenv
+pip install pandas
+pip install openpyxl

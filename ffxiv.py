@@ -5,6 +5,7 @@ import json
 import aiohttp
 import pyxivapi
 import csv
+import pandas as pd
 #from dotenv import load_dotenv
 from Item import Item
 from RecipeClass import RecipeClass
@@ -74,6 +75,7 @@ def recursiveSearch(itemPai):
 
 
 def main(item):    
+    data=[]
     loop = asyncio.get_event_loop()
     itemToCraft = loop.run_until_complete(getItemByName("Item",item))
     #print(f"Encontrado {itemToCraft["UrlType"]} {itemToCraft["ID"]} - {itemToCraft["Name"]}")
@@ -100,14 +102,27 @@ def main(item):
         i.Receita = None
         recursiveSearch(i)
     
+    columns=['ID','Name','Type','Amount','Icon']
     for itemPai in ingredientList:
+        data.append({"ID":itemPai.id,"Name":itemPai.Name,"Type":itemPai.Type,"Amount":itemPai.Amount,"Icon":itemPai.Icon})
         #print(f"Nome {itemPai.Name} tipo {itemPai.Type}")
         if(itemPai.Receita is not None):
-            print(f"o Item {itemPai.Name} possuiu receita com qtd {itemPai.Amount}")
+            #print(f"o Item {itemPai.Name} possuiu receita com qtd {itemPai.Amount}")
             for receita in itemPai.Receita:
-                print(f"--{receita.Name} precisa de {receita.Amount*itemPai.Amount}")
+                #print(f"--{receita.Name} precisa de {receita.Amount*itemPai.Amount}")
+                data.append({"ID":receita.id,"Name":receita.Name,"Type":receita.Type,"Amount":receita.Amount*itemPai.Amount,"Icon":receita.Icon})
         else:
-            print(f"Item {itemPai.Name} não tem receita")
+            #print(f"Item {itemPai.Name} não tem receita")
+            data.append({"ID":itemPai.id,"Name":itemPai.Name,"Type":itemPai.Type,"Amount":itemPai.Amount,"Icon":itemPai.Icon})
+    df = pd.DataFrame(data, columns=columns)
+    os.system('cls')
+    #print(df)    
+    #print(df.groupby(["ID","Name"]).sum(["Amount","Type"])) #Melhor resposta atual
+    #print(df.sort_values(by="Amount",ascending=False))
+    # saving the excel
+    var = df.groupby(["ID","Name"]).sum(["Amount","Type"])
+    var.sort_values(by="Amount",ascending=False).to_excel("crafting.xlsx")
+    
 
         
         
