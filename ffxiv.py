@@ -105,7 +105,7 @@ def main(item):
         if(itemPai.Receita is not None):
             print(f"o Item {itemPai.Name} possuiu receita com qtd {itemPai.Amount}")
             for receita in itemPai.Receita:
-                print(f"--{receita.Name} precisa de {receita.Amount}")
+                print(f"--{receita.Name} precisa de {receita.Amount*itemPai.Amount}")
         else:
             print(f"Item {itemPai.Name} não tem receita")
 
