@@ -1,14 +1,8 @@
 import os
 import asyncio
-import logging
-import json
-import aiohttp
 import pyxivapi
-import csv
 import pandas as pd
 #from dotenv import load_dotenv
-from Item import Item
-from RecipeClass import RecipeClass
 from Ingredient import Ingredient
 
 from pyxivapi.models import Filter, Sort
@@ -102,7 +96,7 @@ def main(item):
         i.Receita = None
         recursiveSearch(i)
     
-    columns=['ID','Name','Type','Amount','Icon']
+    
     for itemPai in ingredientList:
         data.append({"ID":itemPai.id,"Name":itemPai.Name,"Type":itemPai.Type,"Amount":itemPai.Amount,"Icon":itemPai.Icon})
         #print(f"Nome {itemPai.Name} tipo {itemPai.Type}")
@@ -114,14 +108,13 @@ def main(item):
         else:
             #print(f"Item {itemPai.Name} não tem receita")
             data.append({"ID":itemPai.id,"Name":itemPai.Name,"Type":itemPai.Type,"Amount":itemPai.Amount,"Icon":itemPai.Icon})
-    df = pd.DataFrame(data, columns=columns)
+    #df = pd.DataFrame(data, columns=columns)
     os.system('cls')
     #print(df)    
     #print(df.groupby(["ID","Name"]).sum(["Amount","Type"])) #Melhor resposta atual
     #print(df.sort_values(by="Amount",ascending=False))
     # saving the excel
-    var = df.groupby(["ID","Name"]).sum(["Amount","Type"])
-    var.sort_values(by="Amount",ascending=False).to_excel("crafting.xlsx")
+    return data
     
 
         
@@ -135,8 +128,27 @@ def main(item):
 
 
 if __name__ == '__main__':
-    #Indagator's Doublet Vest of Gathering
-    main("Indagator's Doublet Vest of Gathering")
+    itemList =[]    
+    columns=['ID','Name','Type','Amount','Icon']
+    data=[]
+    haveMore = True
+    while(haveMore):
+         var = str(input("Item to Search: "))
+         itemList.append(var)
+         haveMore = True if input("Continue [Y/N] ?")=="Y" else False
+    
+    for i in itemList:
+        data += main(i)
+    
+    
+    df = pd.DataFrame(data, columns=columns)
+    print(df)
+    var = None
+    if(len(itemList)>1):
+        var =df.groupby(["ID","Name","Type"]).sum(["Amount","Type"])
+    else:
+        var = df.groupby(["ID","Name"]).sum(["Amount","Type"])
+    var.sort_values(by="Amount",ascending=False).to_excel("crafting.xlsx")
 
 
 
