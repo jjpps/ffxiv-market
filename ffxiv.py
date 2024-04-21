@@ -75,7 +75,7 @@ def main(item):
        
     recipeClass = recipeClass["Recipes"][0]
     receitaIngrediantes = loop.run_until_complete(getItemById("Recipe",recipeClass["ID"]))
-    
+    data.append({"ID":itemToCraft["ID"],"Name":itemToCraft["Name"],"Type":"ItemToCraft","Amount":1,"Icon":None})
     ingredientList = []
     for x in range(10):
         ingredient = receitaIngrediantes[f"ItemIngredient{x}"]
@@ -90,7 +90,8 @@ def main(item):
     
     
     for itemPai in ingredientList:
-        data.append({"ID":itemPai.id,"Name":itemPai.Name,"Type":itemPai.Type,"Amount":itemPai.Amount,"Icon":itemPai.Icon})
+        if (itemPai.Receita is None):
+            data.append({"ID":itemPai.id,"Name":itemPai.Name,"Type":itemPai.Type,"Amount":itemPai.Amount,"Icon":itemPai.Icon})
         
         if(itemPai.Receita is not None):            
             for receita in itemPai.Receita:               
@@ -113,26 +114,23 @@ def main(item):
 
 if __name__ == '__main__':
     itemList =[]    
-    columns=['ID','Name','Type','Amount','Icon']
+    columns=['ID','Name','Type','Amount','Icon','InventoryAmount','AmountLeft']
     data=[]
-    haveMore = True
-    while(haveMore):
-         var = str(input("Item to Search: "))
-         itemList.append(var)
-         haveMore = True if input("Continue [Y/N] ?")=="Y" else False
     
-    for i in itemList:
+    var = str(input("Item to Search Separeted By ,(comma): "))
+    var = var.split(',')    
+    for i in var:
         data += main(i)
     
     
     df = pd.DataFrame(data, columns=columns)
     print(df)
     var = None
-    if(len(itemList)>1):
+    if(len(data)>1):
         var =df.groupby(["ID","Name","Type"]).sum(["Amount","Type"])
     else:
         var = df.groupby(["ID","Name"]).sum(["Amount","Type"])
-    var.sort_values(by="Amount",ascending=False).to_excel("crafting.xlsx")
+    var.sort_values(by="Name",ascending=False).to_excel("crafting.xlsx")
 
 
 
